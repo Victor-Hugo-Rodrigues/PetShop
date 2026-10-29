@@ -105,6 +105,7 @@ function imagemItem($imagem): string
                 <li class="nav-item"><a class="nav-link" href="#inicio">Início</a></li>
                 <li class="nav-item"><a class="nav-link" href="#produtos">Produtos</a></li>
                 <li class="nav-item"><a class="nav-link" href="#servicos">Serviços</a></li>
+                <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
                 <li class="nav-item"><a class="nav-link" href="#contato">Contato</a></li>
                 <li class="nav-item ms-lg-2"><a href="admin/login.php" class="btn btn-outline-pet rounded-pill px-3 mt-2 mt-lg-0"><i class="bi bi-person-lock me-1"></i>Administração</a></li>
             </ul>
@@ -224,6 +225,86 @@ function imagemItem($imagem): string
             <?php else: ?>
                 <div class="col-12"><div class="empty-state text-center py-5 px-3"><i class="bi bi-scissors display-4" style="color:var(--pet-green)"></i><h3 class="h5 fw-bold mt-3">Serviços feitos com carinho</h3><p class="text-secondary mb-0">Os serviços cadastrados aparecerão aqui.</p></div></div>
             <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+
+<section id="faq" class="py-5">
+    <div class="container py-lg-4">
+        <div class="row g-5 align-items-start">
+            <div class="col-lg-4">
+                <div class="section-eyebrow mb-2">DÚVIDAS FREQUENTES</div>
+                <h2 class="section-title display-5 fw-bold mb-3">Tem alguma dúvida?</h2>
+                <p class="text-secondary mb-4">Reunimos algumas respostas para ajudar você a cuidar melhor do seu pet e conhecer nossos produtos e serviços.</p>
+                <a href="https://wa.me/<?= escapar($whatsapp) ?>?text=<?= rawurlencode('Olá! Tenho uma dúvida sobre o PetShop.') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-pet rounded-pill px-4">
+                    <i class="bi bi-whatsapp me-2"></i>Pergunte pelo WhatsApp
+                </a>
+            </div>
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 border-bottom bg-transparent">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button bg-transparent fw-semibold px-0" type="button" data-bs-toggle="collapse" data-bs-target="#faqUm" aria-expanded="true" aria-controls="faqUm">
+                                Como consulto o preço de um produto?
+                            </button>
+                        </h3>
+                        <div id="faqUm" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body px-0 pt-0 text-secondary">
+                                Os preços dos produtos disponíveis aparecem na seção de produtos. Se precisar confirmar disponibilidade ou tiver alguma dúvida, fale com a gente pelo WhatsApp.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 border-bottom bg-transparent">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent fw-semibold px-0" type="button" data-bs-toggle="collapse" data-bs-target="#faqDois" aria-expanded="false" aria-controls="faqDois">
+                                Por que o preço do banho pode variar?
+                            </button>
+                        </h3>
+                        <div id="faqDois" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body px-0 pt-0 text-secondary">
+                                O valor pode variar conforme o porte do animal e os cuidados necessários. Consulte a faixa de preço exibida no serviço e confirme o valor pelo WhatsApp antes de agendar.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 border-bottom bg-transparent">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent fw-semibold px-0" type="button" data-bs-toggle="collapse" data-bs-target="#faqTres" aria-expanded="false" aria-controls="faqTres">
+                                Como faço para solicitar um serviço?
+                            </button>
+                        </h3>
+                        <div id="faqTres" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body px-0 pt-0 text-secondary">
+                                Clique em “Consultar serviço” no cartão do serviço desejado. Você será direcionado ao WhatsApp para tirar dúvidas e combinar os detalhes do atendimento.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 border-bottom bg-transparent">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent fw-semibold px-0" type="button" data-bs-toggle="collapse" data-bs-target="#faqQuatro" aria-expanded="false" aria-controls="faqQuatro">
+                                Como sei quais produtos e serviços estão disponíveis?
+                            </button>
+                        </h3>
+                        <div id="faqQuatro" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body px-0 pt-0 text-secondary">
+                                A página apresenta os produtos e serviços ativos cadastrados na loja. Para confirmar a disponibilidade de um item específico, entre em contato com nosso atendimento.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 bg-transparent">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent fw-semibold px-0" type="button" data-bs-toggle="collapse" data-bs-target="#faqCinco" aria-expanded="false" aria-controls="faqCinco">
+                                Como entro em contato com o PetShop?
+                            </button>
+                        </h3>
+                        <div id="faqCinco" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body px-0 pt-0 text-secondary">
+                                Use qualquer botão de WhatsApp disponível na página. A mensagem já vai preparada para facilitar o início da conversa.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
