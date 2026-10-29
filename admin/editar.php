@@ -14,18 +14,34 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+if (
+    empty($_SESSION['csrf_token']) ||
+    !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')
+) {
+    header('Location: produtos.php?erro=csrf');
+    exit;
+}
+
 $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 $nome = trim($_POST['nome'] ?? '');
 $descricao = trim($_POST['descricao'] ?? '');
 $tipo = $_POST['tipo'] ?? '';
+
 $valorTexto = str_replace(',', '.', trim($_POST['valor'] ?? ''));
+$minimoTexto = str_replace(',', '.', trim($_POST['preco_minimo'] ?? ''));
+$maximoTexto = str_replace(',', '.', trim($_POST['preco_maximo'] ?? ''));
 $estoqueTexto = trim($_POST['estoque'] ?? '');
 
-$valorValido = $valorTexto !== ''
-    && is_numeric($valorTexto)
-    && is_finite((float) $valorTexto)
-    && (float) $valorTexto >= 0
-    && (float) $valorTexto <= 99999999.99;
+function precoValido(string $texto): bool
+{
+    return $texto !== ''
+        && is_numeric($texto)
+        && is_finite((float) $texto)
+        && (float) $texto >= 0
+        && (float) $texto <= 99999999.99;
+}
+
+$valorValido = precoValido($valorTexto);
 
 $estoqueValido = $estoqueTexto === ''
     || (ctype_digit($estoqueTexto) && (float) $estoqueTexto <= 2147483647);
@@ -37,22 +53,41 @@ if (
     mb_strlen($nome) > 100 ||
     mb_strlen($descricao) > 255 ||
     !in_array($tipo, ['produto', 'servico'], true) ||
-    !$valorValido ||
     !$estoqueValido
 ) {
     header('Location: produtos.php?erro=dados_invalidos');
     exit;
 }
 
-$valor = (float) $valorTexto;
-$estoque = $estoqueTexto === '' ? null : (int) $estoqueTexto;
+if ($tipo === 'produto') {
+    if (!$valorValido) {
+        header('Location: produtos.php?erro=dados_invalidos');
+        exit;
+    }
 
-if ($tipo === 'servico') {
+    $valor = (float) $valorTexto;
+    $estoque = $estoqueTexto === '' ? null : (int) $estoqueTexto;
+    $precoMinimo = null;
+    $precoMaximo = null;
+} else {
+    if (
+        !precoValido($minimoTexto) ||
+        !precoValido($maximoTexto) ||
+        (float) $minimoTexto > (float) $maximoTexto
+    ) {
+        header('Location: produtos.php?erro=dados_invalidos');
+        exit;
+    }
+
+    $precoMinimo = (float) $minimoTexto;
+    $precoMaximo = (float) $maximoTexto;
+    $valor = $precoMinimo;
     $estoque = null;
 }
 
 $sql = "UPDATE itens
-        SET nome = ?, descricao = ?, tipo = ?, valor = ?, estoque = ?
+        SET nome = ?, descricao = ?, tipo = ?, valor = ?, estoque = ?,
+            preco_minimo = ?, preco_maximo = ?
         WHERE id = ?";
 
 $stmt = mysqli_prepare($conexao, $sql);
@@ -65,22 +100,22 @@ if (!$stmt) {
 
 mysqli_stmt_bind_param(
     $stmt,
-    'sssdii',
+    'sssidddi',
     $nome,
     $descricao,
     $tipo,
     $valor,
     $estoque,
+    $precoMinimo,
+    $precoMaximo,
     $id
 );
 
 $executado = mysqli_stmt_execute($stmt);
-$afetadas = mysqli_stmt_affected_rows($stmt);
 $erro = mysqli_stmt_error($stmt);
-
 mysqli_stmt_close($stmt);
 
-if ($executado && $afetadas >= 0) {
+if ($executado) {
     header('Location: produtos.php?sucesso=editado');
     exit;
 }

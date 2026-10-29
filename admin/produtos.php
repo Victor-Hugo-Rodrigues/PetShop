@@ -17,7 +17,8 @@ function escapar($valor): string
     return htmlspecialchars((string)($valor ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
-$sql = "SELECT id, nome, descricao, tipo, valor, estoque, ativo
+$sql = "SELECT id, nome, descricao, tipo, valor, estoque, ativo,
+               preco_minimo, preco_maximo
         FROM itens
         ORDER BY id DESC";
 
@@ -39,14 +40,12 @@ $mensagensErro = [
     'exclusao' => 'Não foi possível excluir o item.',
     'edicao' => 'Não foi possível atualizar o item.',
     'cadastro' => 'Não foi possível cadastrar o item.',
-    'csrf' => 'A sessão expirou ou a solicitação é inválida. Atualize a página e tente novamente.'
+    'csrf' => 'A sessão expirou ou a solicitação é inválida. Atualize a página e tente novamente.',
+    'dados_invalidos' => 'Confira os dados informados e tente novamente.'
 ];
 
-$sucesso = $_GET['sucesso'] ?? '';
-$erro = $_GET['erro'] ?? '';
-
-$mensagemSucesso = $mensagensSucesso[$sucesso] ?? null;
-$mensagemErro = $mensagensErro[$erro] ?? null;
+$mensagemSucesso = $mensagensSucesso[$_GET['sucesso'] ?? ''] ?? null;
+$mensagemErro = $mensagensErro[$_GET['erro'] ?? ''] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -55,7 +54,6 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Produtos e Serviços | Pet Shop</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
@@ -67,12 +65,11 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
             <a class="navbar-brand fw-bold" href="index.php">
                 <i class="bi bi-paw-fill me-2"></i>Pet Shop
             </a>
-
             <div class="d-flex gap-2">
                 <a href="index.php" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-speedometer2 me-1"></i>Painel
                 </a>
-                <a href="../logout.php" class="btn btn-light btn-sm text-success">
+                <a href="logout.php" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-box-arrow-right me-1"></i>Sair
                 </a>
             </div>
@@ -84,11 +81,8 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
             <div>
                 <h1 class="h3 fw-bold mb-1">Produtos e serviços</h1>
-                <p class="text-secondary mb-0">
-                    Gerencie os itens cadastrados na sua loja.
-                </p>
+                <p class="text-secondary mb-0">Gerencie os itens cadastrados na sua loja.</p>
             </div>
-
             <a href="cadastrar.php" class="btn btn-success">
                 <i class="bi bi-plus-circle me-1"></i>Cadastrar item
             </a>
@@ -131,22 +125,17 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
                                 <th class="text-center pe-3">Ações</th>
                             </tr>
                         </thead>
-
                         <tbody>
                             <?php if (mysqli_num_rows($resultado) > 0): ?>
                                 <?php while ($item = mysqli_fetch_assoc($resultado)): ?>
                                     <tr>
                                         <td class="ps-3"><?= (int)$item['id'] ?></td>
-
                                         <td>
                                             <span class="fw-semibold"><?= escapar($item['nome']) ?></span>
                                             <?php if (!empty($item['descricao'])): ?>
-                                                <div class="small text-secondary">
-                                                    <?= escapar($item['descricao']) ?>
-                                                </div>
+                                                <div class="small text-secondary"><?= escapar($item['descricao']) ?></div>
                                             <?php endif; ?>
                                         </td>
-
                                         <td>
                                             <?php if ($item['tipo'] === 'produto'): ?>
                                                 <span class="badge text-bg-primary">Produto</span>
@@ -154,17 +143,22 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
                                                 <span class="badge text-bg-info">Serviço</span>
                                             <?php endif; ?>
                                         </td>
-
                                         <td class="text-nowrap fw-semibold">
-                                            R$ <?= number_format((float)$item['valor'], 2, ',', '.') ?>
+                                            <?php if ($item['tipo'] === 'servico'): ?>
+                                                <?php if ($item['preco_minimo'] !== null && $item['preco_maximo'] !== null): ?>
+                                                    R$ <?= number_format((float)$item['preco_minimo'], 2, ',', '.') ?>
+                                                    a
+                                                    R$ <?= number_format((float)$item['preco_maximo'], 2, ',', '.') ?>
+                                                <?php else: ?>
+                                                    Consulte o preço
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                R$ <?= number_format((float)$item['valor'], 2, ',', '.') ?>
+                                            <?php endif; ?>
                                         </td>
-
                                         <td>
-                                            <?= $item['estoque'] === null
-                                                ? '—'
-                                                : (int)$item['estoque'] ?>
+                                            <?= $item['estoque'] === null ? '—' : (int)$item['estoque'] ?>
                                         </td>
-
                                         <td>
                                             <?php if ((int)$item['ativo'] === 1): ?>
                                                 <span class="badge text-bg-success">Ativo</span>
@@ -172,7 +166,6 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
                                                 <span class="badge text-bg-secondary">Inativo</span>
                                             <?php endif; ?>
                                         </td>
-
                                         <td class="text-center pe-3 text-nowrap">
                                             <button
                                                 type="button"
@@ -184,7 +177,9 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
                                                 data-descricao="<?= escapar($item['descricao']) ?>"
                                                 data-tipo="<?= escapar($item['tipo']) ?>"
                                                 data-valor="<?= escapar($item['valor']) ?>"
-                                                data-estoque="<?= escapar($item['estoque']) ?>">
+                                                data-estoque="<?= escapar($item['estoque']) ?>"
+                                                data-preco-minimo="<?= escapar($item['preco_minimo']) ?>"
+                                                data-preco-maximo="<?= escapar($item['preco_maximo']) ?>">
                                                 <i class="bi bi-pencil-square me-1"></i>Editar
                                             </button>
 
@@ -192,7 +187,6 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
                                                 onsubmit="return confirm('Tem certeza de que deseja excluir este item?');">
                                                 <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
                                                 <input type="hidden" name="csrf_token" value="<?= escapar($_SESSION['csrf_token']) ?>">
-
                                                 <button type="submit" class="btn btn-sm btn-outline-danger mb-1">
                                                     <i class="bi bi-trash me-1"></i>Excluir
                                                 </button>
@@ -206,9 +200,7 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
                                         <i class="bi bi-inbox display-5 text-secondary"></i>
                                         <p class="fw-semibold mt-3 mb-1">Nenhum item cadastrado</p>
                                         <p class="text-secondary small">Cadastre um produto ou serviço para começar.</p>
-                                        <a href="cadastrar.php" class="btn btn-success btn-sm">
-                                            Cadastrar primeiro item
-                                        </a>
+                                        <a href="cadastrar.php" class="btn btn-success btn-sm">Cadastrar primeiro item</a>
                                     </td>
                                 </tr>
                             <?php endif; ?>
@@ -228,9 +220,8 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
     </main>
 
     <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="tituloModalEditar" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow">
-
                 <form method="POST" action="editar.php">
                     <div class="modal-header bg-success text-white">
                         <h2 class="modal-title fs-5" id="tituloModalEditar">
@@ -262,16 +253,26 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
                         </div>
 
                         <div class="mb-3">
-                            <label for="editar_valor" class="form-label">Preço (R$)</label>
-                            <input type="number" class="form-control" name="valor" id="editar_valor" min="0" step="0.01" required>
+                            <label for="editar_valor" class="form-label">Preço do produto (R$)</label>
+                            <input type="number" class="form-control" name="valor" id="editar_valor" min="0" max="99999999.99" step="0.01">
+                            <div class="form-text">Usado para produtos. Para serviços, preencha a faixa abaixo.</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editar_preco_minimo" class="form-label">Preço mínimo do serviço (R$)</label>
+                                <input type="number" class="form-control" name="preco_minimo" id="editar_preco_minimo" min="0" max="99999999.99" step="0.01">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editar_preco_maximo" class="form-label">Preço máximo do serviço (R$)</label>
+                                <input type="number" class="form-control" name="preco_maximo" id="editar_preco_maximo" min="0" max="99999999.99" step="0.01">
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="editar_estoque" class="form-label">Estoque</label>
                             <input type="number" class="form-control" name="estoque" id="editar_estoque" min="0" step="1">
-                            <div class="form-text" id="ajudaEstoque">
-                                Informe a quantidade disponível do produto.
-                            </div>
+                            <div class="form-text">Serviços não possuem controle de estoque.</div>
                         </div>
                     </div>
 
@@ -282,32 +283,13 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
                         </button>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         const modalEditar = document.getElementById('modalEditar');
-        const campoTipo = document.getElementById('editar_tipo');
-        const campoEstoque = document.getElementById('editar_estoque');
-        const ajudaEstoque = document.getElementById('ajudaEstoque');
-
-        function atualizarEstoque() {
-            const ehServico = campoTipo.value === 'servico';
-
-            campoEstoque.disabled = ehServico;
-            campoEstoque.required = !ehServico;
-
-            if (ehServico) {
-                campoEstoque.value = '';
-                ajudaEstoque.textContent = 'Serviços não possuem controle de estoque.';
-            } else {
-                ajudaEstoque.textContent = 'Informe a quantidade disponível do produto.';
-            }
-        }
 
         modalEditar.addEventListener('show.bs.modal', function(evento) {
             const botao = evento.relatedTarget;
@@ -315,14 +297,12 @@ $mensagemErro = $mensagensErro[$erro] ?? null;
             document.getElementById('editar_id').value = botao.dataset.id;
             document.getElementById('editar_nome').value = botao.dataset.nome;
             document.getElementById('editar_descricao').value = botao.dataset.descricao;
-            campoTipo.value = botao.dataset.tipo;
+            document.getElementById('editar_tipo').value = botao.dataset.tipo;
             document.getElementById('editar_valor').value = botao.dataset.valor;
-            campoEstoque.value = botao.dataset.estoque;
-
-            atualizarEstoque();
+            document.getElementById('editar_estoque').value = botao.dataset.estoque;
+            document.getElementById('editar_preco_minimo').value = botao.dataset.precoMinimo || '';
+            document.getElementById('editar_preco_maximo').value = botao.dataset.precoMaximo || '';
         });
-
-        campoTipo.addEventListener('change', atualizarEstoque);
     </script>
 
 </body>

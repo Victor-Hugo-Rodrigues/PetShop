@@ -1,14 +1,16 @@
+
 <?php
 session_start();
 
-require_once __DIR__ . '/../conexao.php';
-
 if (isset($_SESSION['administrador_id'])) {
-    header('Location: admin/index.php');
+    header('Location: index.php');
     exit;
 }
 
+require_once __DIR__ . '/../conexao.php';
+
 $erro = '';
+$email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
@@ -33,17 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             mysqli_stmt_close($stmt);
 
-            if (
-                $administrador &&
-                password_verify($senha, $administrador['senha'])
-            ) {
+            if ($administrador && password_verify($senha, $administrador['senha'])) {
                 session_regenerate_id(true);
 
                 $_SESSION['administrador_id'] = $administrador['id'];
                 $_SESSION['administrador_nome'] = $administrador['nome'];
                 $_SESSION['administrador_email'] = $administrador['email'];
 
-                header('Location: admin/index.php');
+                header('Location: index.php');
                 exit;
             }
 
@@ -54,36 +53,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+function escaparLogin($valor): string
+{
+    return htmlspecialchars((string)$valor, ENT_QUOTES, 'UTF-8');
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Login | Pet Shop</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/estilo.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
-
-<body class="login-pet">
+<body class="bg-light">
     <main class="container min-vh-100 d-flex align-items-center justify-content-center py-4">
-        <div class="card login-card border-0 shadow">
+        <div class="card border-0 shadow-sm w-100" style="max-width: 430px;">
             <div class="card-body p-4 p-md-5">
-
                 <div class="text-center mb-4">
-                    <div class="login-logo">🐾</div>
+                    <div class="text-success display-3">
+                        <i class="bi bi-paw-fill"></i>
+                    </div>
                     <h1 class="h3 fw-bold">Pet Shop</h1>
-                    <p class="text-secondary">Área administrativa</p>
+                    <p class="text-secondary mb-0">Área administrativa</p>
                 </div>
 
                 <?php if ($erro !== ''): ?>
                     <div class="alert alert-danger" role="alert">
-                        <?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?>
+                        <?= escaparLogin($erro) ?>
                     </div>
                 <?php endif; ?>
 
@@ -95,8 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             class="form-control"
                             id="email"
                             name="email"
-                            maxlength="150"
+                            maxlength="250"
                             autocomplete="username"
+                            value="<?= escaparLogin($email) ?>"
                             required>
                     </div>
 
@@ -112,19 +112,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <button type="submit" class="btn btn-success w-100 py-2">
-                        Entrar
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
                     </button>
                 </form>
 
                 <div class="text-center mt-4">
-                    <a href="index.php" class="text-decoration-none">
-                        Voltar ao início
+                    <a href="../index.php" class="text-decoration-none">
+                        <i class="bi bi-arrow-left me-1"></i>Voltar à loja
                     </a>
                 </div>
-
             </div>
         </div>
     </main>
 </body>
-
 </html>

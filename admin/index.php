@@ -93,8 +93,8 @@ if ($resultadoResumo) {
                         <?= escapar($nome) ?>
                     </span>
 
-                    <a href="../logout.php" class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-box-arrow-right"></i> Sair
+                    <a href="logout.php" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i>Sair
                     </a>
                 </div>
             </div>
