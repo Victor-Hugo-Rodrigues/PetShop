@@ -13,6 +13,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Valida o token CSRF antes de executar qualquer exclusão.
+$tokenSessao = $_SESSION['csrf_token'] ?? '';
+$tokenFormulario = $_POST['csrf_token'] ?? '';
+
+if (
+    !is_string($tokenSessao) ||
+    $tokenSessao === '' ||
+    !is_string($tokenFormulario) ||
+    $tokenFormulario === '' ||
+    !hash_equals($tokenSessao, $tokenFormulario)
+) {
+    header('Location: produtos.php?erro=csrf');
+    exit;
+}
+
 $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 
 if (!$id || $id < 1) {
